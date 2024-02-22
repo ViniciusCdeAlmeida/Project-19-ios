@@ -10,9 +10,15 @@ import UIKit
 
 class ViewController: UITableViewController {
     var itemList = ["Number one", "Number two", "Number three"]
+
+    let defaults = UserDefaults.standard
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view.
+
+        if let itens = defaults.array(forKey: "todoList") as? [String] {
+            itemList = itens
+        }
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -42,6 +48,7 @@ class ViewController: UITableViewController {
 
         let action = UIAlertAction(title: "Add Item", style: .default) { _ in
             self.itemList.append(newItem.text!)
+            self.defaults.set(self.itemList, forKey: "todoList")
             self.tableView.reloadData()
         }
         alert.addTextField {
