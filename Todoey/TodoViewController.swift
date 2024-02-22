@@ -9,14 +9,14 @@
 import UIKit
 
 class ViewController: UITableViewController {
-    var itemList = ["Number one", "Number two", "Number three"]
+    var itemList = [TodoItem]()
 
     let defaults = UserDefaults.standard
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        if let itens = defaults.array(forKey: "todoList") as? [String] {
+        if let itens = defaults.array(forKey: "todoList") as? [TodoItem] {
             itemList = itens
         }
     }
@@ -27,17 +27,18 @@ class ViewController: UITableViewController {
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "TodoItemCell", for: indexPath)
-        cell.textLabel?.text = itemList[indexPath.row]
+        let item = itemList[indexPath.row]
+
+        cell.textLabel?.text = item.title
 
         return cell
     }
 
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        if tableView.cellForRow(at: indexPath)?.accessoryType == .checkmark {
-            tableView.cellForRow(at: indexPath)?.accessoryType = .none
-        } else {
-            tableView.cellForRow(at: indexPath)?.accessoryType = .checkmark
-        }
+        let item = itemList[indexPath.row]
+        item.done = !item.done
+
+        tableView.reloadData()
 
         tableView.deselectRow(at: indexPath, animated: true)
     }
@@ -47,7 +48,8 @@ class ViewController: UITableViewController {
         let alert = UIAlertController(title: "Add new item", message: "", preferredStyle: .alert)
 
         let action = UIAlertAction(title: "Add Item", style: .default) { _ in
-            self.itemList.append(newItem.text!)
+            let item = TodoItem(title: newItem.text!)
+            self.itemList.append(item)
             self.defaults.set(self.itemList, forKey: "todoList")
             self.tableView.reloadData()
         }
