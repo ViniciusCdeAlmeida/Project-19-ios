@@ -12,6 +12,7 @@ class ViewController: UITableViewController {
     var itemList = [TodoItem]()
 
     let defaults = UserDefaults.standard
+    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -31,6 +32,12 @@ class ViewController: UITableViewController {
 
         cell.textLabel?.text = item.title
 
+        if item.done {
+            cell.accessoryType = .checkmark
+        } else {
+            cell.accessoryType = .none
+        }
+
         return cell
     }
 
@@ -38,6 +45,7 @@ class ViewController: UITableViewController {
         let item = itemList[indexPath.row]
         item.done = !item.done
 
+        saveItems()
         tableView.reloadData()
 
         tableView.deselectRow(at: indexPath, animated: true)
@@ -49,9 +57,9 @@ class ViewController: UITableViewController {
 
         let action = UIAlertAction(title: "Add Item", style: .default) { _ in
             let item = TodoItem(title: newItem.text!)
+            self.saveItems()
             self.itemList.append(item)
-            self.defaults.set(self.itemList, forKey: "todoList")
-            self.tableView.reloadData()
+            self.defaults.set(["title": item.title, "done": item.done] as [String: Any], forKey: "todoList")
         }
         alert.addTextField {
             alert in
@@ -59,5 +67,15 @@ class ViewController: UITableViewController {
         }
         alert.addAction(action)
         present(alert, animated: true, completion: nil)
+    }
+
+    func saveItems() {
+        let encoder = PropertyListEncoder()
+        do {
+            let data = try encoder.encode(itemList)
+            try data.write(to: dataFilePath!)
+        } catch {
+            print("Error encoding")
+        }
     }
 }
